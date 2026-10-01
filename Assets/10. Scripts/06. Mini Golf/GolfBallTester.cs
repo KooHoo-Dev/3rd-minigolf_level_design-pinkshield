@@ -10,6 +10,12 @@ namespace Study3D.MiniGolf
         public GolfBall ball;
         public Vector3 startPosition;
 
+        private void Start()
+        {
+            startPosition = transform.position;
+        }
+
+
         private void Update()
         {
             if (SimpleInput.GetKeyDown(Key.Digit1))
