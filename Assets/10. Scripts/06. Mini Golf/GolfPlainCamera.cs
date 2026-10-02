@@ -45,9 +45,36 @@ namespace Study3D.MiniGolf
             if (target == null)
             {
                 Debug.LogError("No target assigned!");
+                enabled = false;
                 return;
             }
+
             trackedPoint = target.position;
+
+            // 씬에 배치한 카메라에서 골프공으로 향하는 방향
+            Vector3 directionToTarget = trackedPoint - transform.position;
+
+            if (directionToTarget.sqrMagnitude <= Mathf.Epsilon)
+            {
+                Debug.LogError("카메라와 골프공의 위치가 같습니다.");
+                enabled = false;
+                return;
+            }
+
+            // 현재 카메라와 골프공 사이의 거리를 시작 반지름으로 사용
+            radius = directionToTarget.magnitude;
+
+            // 현재 위치에서 골프공을 바라보는 회전값 계산
+            Quaternion startRotation =
+                Quaternion.LookRotation(directionToTarget, Vector3.up);
+
+            Vector3 startAngles = startRotation.eulerAngles;
+
+            yaw = Mathf.DeltaAngle(0f, startAngles.y);
+            pitch = Mathf.DeltaAngle(0f, startAngles.x);
+
+            // 현재 배치한 위치를 기준으로 시작하므로 추가 오프셋 제거
+            offset = Vector3.zero;
         }
 
         // 모든 Update의 로직이나 값 설정들이 갱신 된 후에

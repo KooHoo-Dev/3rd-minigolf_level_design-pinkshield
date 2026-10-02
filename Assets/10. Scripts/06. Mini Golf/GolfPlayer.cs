@@ -14,7 +14,7 @@ namespace Study3D.MiniGolf
 
         [Header("Ref")] 
         public GolfBall ball;
-        public GolfAimIndicator aimIndicator;
+        public GolfAimIndicatorV2 aimIndicator;
         
         private float chargeTime;
         private Camera mainCam;
