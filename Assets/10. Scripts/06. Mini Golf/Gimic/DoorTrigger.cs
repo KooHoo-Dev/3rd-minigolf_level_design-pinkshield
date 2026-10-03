@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Study3D.MiniGolf.Obstacles
 {
@@ -8,14 +9,18 @@ namespace Study3D.MiniGolf.Obstacles
         [SerializeField] private Animator doorAnimator;
 
         [Header("감지 설정")]
-        [SerializeField] private string ballTag = "GolfBall";
+        [SerializeField] private string ballTag = "Ball";
 
+        [FormerlySerializedAs("Clearbox")]
+        [Header("그린 박스")] 
+        [SerializeField] private GameObject clearbox;
+        
         private static readonly int OpenParameter = Animator.StringToHash("Open");
         private bool isOpened;
 
         private void OnTriggerEnter(Collider other)
         {
-            if (isOpened || doorAnimator == null)
+            if ( isOpened || doorAnimator == null)
             {
                 return;
             }
@@ -35,6 +40,15 @@ namespace Study3D.MiniGolf.Obstacles
 
             doorAnimator.SetTrigger(OpenParameter);
             isOpened = true;
+            if (clearbox.activeSelf)
+            {
+                clearbox.SetActive(false);
+            }
+            else if (clearbox == null)
+            {
+                return;
+            }
+            
         }
     }
 }

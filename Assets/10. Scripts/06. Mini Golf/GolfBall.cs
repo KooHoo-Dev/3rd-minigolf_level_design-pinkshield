@@ -13,7 +13,11 @@ namespace Study3D.MiniGolf
         // 공을 다이나믹으로 사용하기 때문에 게임적 표현을
         // 회전 스피드에 제한을 활용하여 간접적으로 제어 합니다.
         public float maxAngularSpeed = 150f;
-
+        
+        [SerializeField]
+        private Obstacles.CatController catController;
+        
+        
         private Rigidbody rBody;
         private Vector3 lastPosition; // 유저가 마지막으로 공을 건드린 위치
         private Vector3 shotVelocity; // 공의 방향 * 세기가 연산되는 변수
@@ -74,6 +78,7 @@ namespace Study3D.MiniGolf
         public void ReturnToLasShotPosition()
         {
             Teleport(lastPosition);
+            catController.NotifyBallReset();
         }
 
         // 스테이지 시작시 공을 놓기 위한 함수
@@ -81,6 +86,10 @@ namespace Study3D.MiniGolf
         {
             lastPosition = position;
             Teleport(position);
+            if (catController != null)
+            {
+                catController.NotifyBallReset();
+            }
         }
     }
 }
