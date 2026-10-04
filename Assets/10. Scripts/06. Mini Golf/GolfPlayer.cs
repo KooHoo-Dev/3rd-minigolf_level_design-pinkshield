@@ -1,5 +1,4 @@
-﻿using System;
-using Study.Utilities;
+﻿using Study.Utilities;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,58 +9,114 @@ namespace Study3D.MiniGolf
         [Header("Settings")]
         public float minPower;
         public float maxPower;
-        public float cycleTime;
+        [Min(0.01f)] public float cycleTime = 1f;
 
-        [Header("Ref")] 
+        [Header("Ref")]
         public GolfBall ball;
         public GolfAimIndicatorV2 aimIndicator;
-        
+        [SerializeField] private Camera mainCam;
+
+        private const float MinimumCycleTime = 0.01f;
         private float chargeTime;
-        private Camera mainCam;
-        private float power01; // 0~1 까지로 치환한 세기
+        private float power01;
+        private bool isCharging;
 
         private void Awake()
         {
-            mainCam = Camera.main;
+            TryFindCamera();
         }
-        
+
+        private void OnEnable()
+        {
+            TryFindCamera();
+            ResetCharge();
+        }
+
+        private void TryFindCamera()
+        {
+            // Inspector에 연결한 카메라는 Camera.main으로 덮어쓰지 않습니다.
+            if (mainCam == null)
+            {
+                mainCam = Camera.main;
+            }
+        }
+
         private void Update()
         {
-            Vector3 aimDirection = mainCam.transform.forward;
-            aimDirection.y = 0.0f;
-            aimDirection.Normalize();
+            // 연출·엔딩 중에는 충전과 발사를 처리하지 않습니다.
+            if (Time.timeScale <= 0f)
+            {
+                CancelAim();
+                return;
+            }
 
+            TryFindCamera();
+
+            if (mainCam == null || mainCam.isActiveAndEnabled == false || ball == null)
+            {
+                CancelAim();
+                return;
+            }
+
+            Vector3 aimDirection = mainCam.transform.forward;
+            aimDirection.y = 0f;
+
+            // Vector3는 값 형식이므로 null 검사 대신 길이를 확인합니다.
+            if (aimDirection.sqrMagnitude <= Mathf.Epsilon)
+            {
+                CancelAim();
+                return;
+            }
+
+            aimDirection.Normalize();
             bool canShoot = ball.IsStopped;
 
-            if (canShoot)
+            if (canShoot == false)
             {
-                if (SimpleInput.GetKey(Key.Space)) // power charge
-                {
-                    chargeTime += Time.deltaTime;
-                    // PingPong 함수를 사용해서 왔다리 갔다리 하는 표현을 해줍시다.
-                    power01 = Mathf.PingPong(chargeTime / cycleTime, 1);
-                }
-                else if (SimpleInput.GetKeyUp(Key.Space)) // 입력 전달
-                {
-                    float power = Mathf.Lerp(minPower, maxPower, power01);
-                    ball.Shoot(aimDirection, power);
-                    chargeTime = 0.0f;
-                    power01 = 0.0f;
-                }
+                CancelAim();
+                return;
             }
-            
-            UpdateFeedback(aimDirection, canShoot);
+
+            if (SimpleInput.GetKey(Key.Space))
+            {
+                isCharging = true;
+                chargeTime += Time.deltaTime;
+                float safeCycleTime = Mathf.Max(cycleTime, MinimumCycleTime);
+                power01 = Mathf.PingPong(chargeTime / safeCycleTime, 1f);
+            }
+            else if (SimpleInput.GetKeyUp(Key.Space) && isCharging)
+            {
+                float power = Mathf.Lerp(minPower, maxPower, power01);
+                ball.Shoot(aimDirection, power);
+                CancelAim();
+                return;
+            }
+
+            if (aimIndicator != null)
+            {
+                aimIndicator.Show(ball.transform.position, aimDirection, power01);
+            }
         }
 
-        // 보통 플레이어의 입력정보들에 관련된 UI나 피드백들은
-        // 하나의 함수로 모아두는게 좋습니다. (찢지 마세여)
-        // (생각외로 엄청 많이 바뀜)
-        private void UpdateFeedback(Vector3 direction, bool canShoot)
+        private void ResetCharge()
         {
-            if (canShoot)
-                aimIndicator.Show(ball.transform.position, direction, power01);
-            else
+            chargeTime = 0f;
+            power01 = 0f;
+            isCharging = false;
+        }
+
+        private void CancelAim()
+        {
+            ResetCharge();
+            if (aimIndicator != null)
+            {
                 aimIndicator.Hide();
+            }
+        }
+
+        private void OnDisable()
+        {
+            CancelAim();
         }
     }
 }
