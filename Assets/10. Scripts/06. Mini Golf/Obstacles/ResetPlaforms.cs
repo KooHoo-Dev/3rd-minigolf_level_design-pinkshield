@@ -7,6 +7,7 @@ namespace Study3D.MiniGolf.Obstacles
     {
         private GolfBall ball;
         
+        [SerializeField] private GolfEnding golfEnding;
         
         private void OnTriggerEnter(Collider other)
         {
@@ -14,6 +15,10 @@ namespace Study3D.MiniGolf.Obstacles
             {
                 ball = other.gameObject.GetComponent<GolfBall>();
                 ball.ReturnToLasShotPosition();
+                if (golfEnding != null)
+                {
+                    golfEnding.RecordMove();
+                }
             }
         }
     }

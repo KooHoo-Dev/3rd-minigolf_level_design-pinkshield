@@ -15,7 +15,10 @@ namespace Study3D.MiniGolf
         public GolfBall ball;
         public GolfAimIndicatorV2 aimIndicator;
         [SerializeField] private Camera mainCam;
-
+        
+        [SerializeField] private GolfEnding golfEnding;
+        
+        
         private const float MinimumCycleTime = 0.01f;
         private float chargeTime;
         private float power01;
@@ -89,6 +92,10 @@ namespace Study3D.MiniGolf
                 float power = Mathf.Lerp(minPower, maxPower, power01);
                 ball.Shoot(aimDirection, power);
                 CancelAim();
+                if (golfEnding != null)
+                {
+                    golfEnding.RecordMove();
+                }
                 return;
             }
 

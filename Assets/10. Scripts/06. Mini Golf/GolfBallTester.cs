@@ -10,12 +10,24 @@ namespace Study3D.MiniGolf
         public GolfBall ball;
         public Vector3 startPosition;
 
+        public bool IsTestOn { get; private set; }
+        
         [Header("마우스 위치 이동 디버깅")]
         [SerializeField] private bool enableMouseTeleport = true;
         [SerializeField] private Camera testCamera;
         [SerializeField] private LayerMask teleportLayers = ~0;
         [SerializeField, Min(0f)] private float surfaceOffset = 0.15f;
         [SerializeField, Min(0.01f)] private float rayDistance = 1000f;
+
+        private void Awake()
+        {
+            IsTestOn = false;
+        }
+
+        private void OnDisable()
+        {
+            IsTestOn = false;
+        }
 
         private void Start()
         {
@@ -36,17 +48,44 @@ namespace Study3D.MiniGolf
 
         private void Update()
         {
+            // 시작 연출과 엔딩에서는 테스트 입력도 처리하지 않습니다.
+            if (Time.timeScale <= 0f || ball == null)
+            {
+                return;
+            }
+            
+            
+            // 테스트 모드와 관계없이 시작위치로 복귀
+            if (SimpleInput.GetKeyDown(Key.R))
+            {
+                ball.PlaceAt(startPosition);
+                return;
+            }
+            
+            if (SimpleInput.GetKeyDown(Key.F1))
+            {
+                IsTestOn = IsTestOn == false;
+                Debug.Log(IsTestOn ? "테스트 모드 ON" : "테스트 모드 OFF", this);
+            }
+
+            if (IsTestOn == false)
+            {
+                return;
+            }
+
+            // 시작 연출에서 Camera.main을 못 찾았으면 다시 시도합니다.
+            if (testCamera == null)
+            {
+                testCamera = Camera.main;
+            }
+
             if (SimpleInput.GetKeyDown(Key.Digit1))
             {
                 ball.ReturnToLasShotPosition();
             }
+            
 
-            if (SimpleInput.GetKeyDown(Key.Digit2))
-            {
-                ball.PlaceAt(startPosition);
-            }
-
-            if (enableMouseTeleport == false || testCamera == null)
+            if (enableMouseTeleport == false || testCamera == null || testCamera.isActiveAndEnabled == false)
             {
                 return;
             }
