@@ -14,11 +14,12 @@ namespace Study3D.MiniGolf.Obstacles
             if (other.gameObject.tag == "Ball")
             {
                 ball = other.gameObject.GetComponent<GolfBall>();
-                ball.ReturnToLasShotPosition();
                 if (golfEnding != null)
                 {
-                    golfEnding.RecordMove();
+                    golfEnding.RecordFall();
                 }
+                ball.ReturnToLasShotPosition();
+               
             }
         }
     }
