@@ -18,6 +18,7 @@ namespace Study3D.MiniGolf
         [Header("연출 동안 멈출 입력·카메라 스크립트")]
         [SerializeField] private Behaviour[] pauseDuringOpening;
         [SerializeField] private GameObject gameplayUi;
+        [SerializeField] private GolfHowToPlay howToPlay;
 
         private bool[] previousEnabled;
         private bool previousUiActive;
@@ -72,6 +73,10 @@ namespace Study3D.MiniGolf
             ShowCamera(secondGoalCamera, secondGoal);
             yield return new WaitForSecondsRealtime(secondsPerGoal);
             FinishOpening();
+            if (howToPlay != null)
+            {
+                howToPlay.ShowAfterOpening();
+            }
         }
 
         private void ShowCamera(Camera selectedCamera, Transform goal)

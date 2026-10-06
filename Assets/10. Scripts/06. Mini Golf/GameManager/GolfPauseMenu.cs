@@ -10,6 +10,8 @@ namespace Study3D.MiniGolf
         [SerializeField] private GameObject pausePanel;
         [SerializeField] private Button resumeButton;
         [SerializeField] private Button quitButton;
+        [SerializeField] private Button howToPlayButton;
+        [SerializeField] private GolfHowToPlay howToPlay;
 
         [Header("메뉴가 열린 동안 멈출 입력 스크립트")]
         [SerializeField] private Behaviour[] pauseInput;
@@ -33,6 +35,7 @@ namespace Study3D.MiniGolf
             pausePanel.SetActive(false);
             resumeButton.onClick.AddListener(Resume);
             quitButton.onClick.AddListener(QuitGame);
+            if (howToPlayButton != null) howToPlayButton.onClick.AddListener(ShowHelp);
         }
 
         private void Update()
@@ -45,11 +48,32 @@ namespace Study3D.MiniGolf
 
             if (IsOpen)
             {
+                if (howToPlay != null && howToPlay.IsVisible)
+                {
+                    howToPlay.Close();
+                    return;
+                }
                 Resume();
             }
             else if (Time.timeScale > 0f)
             {
                 Open();
+            }
+        }
+
+        private void ShowHelp()
+        {
+            if (IsOpen == false || howToPlay == null || howToPlay.enabled == false) return;
+            pausePanel.SetActive(false);
+            howToPlay.ShowFromPause(ReturnToPause);
+        }
+
+        private void ReturnToPause()
+        {
+            if (IsOpen && pausePanel != null)
+            {
+                pausePanel.SetActive(true);
+                if (howToPlayButton != null) howToPlayButton.Select();
             }
         }
 
@@ -94,6 +118,7 @@ namespace Study3D.MiniGolf
             }
 
             IsOpen = false;
+            if (howToPlay != null && howToPlay.IsVisible) howToPlay.Close();
             if (pausePanel != null)
             {
                 pausePanel.SetActive(false);
@@ -134,6 +159,7 @@ namespace Study3D.MiniGolf
 
         private void OnDestroy()
         {
+            if (howToPlayButton != null) howToPlayButton.onClick.RemoveListener(ShowHelp);
             if (resumeButton != null)
             {
                 resumeButton.onClick.RemoveListener(Resume);
